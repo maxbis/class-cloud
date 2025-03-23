@@ -1,0 +1,3 @@
+ALTER TABLE bullet_points
+ADD COLUMN position_x FLOAT DEFAULT NULL,
+ADD COLUMN position_y FLOAT DEFAULT NULL; 
