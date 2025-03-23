@@ -115,11 +115,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
                 <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); gap: 1.5rem;">
                     <?php foreach ($sessions as $session): ?>
                         <div class="card">
-                            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                                <h3 style="color: <?php echo $session['is_active'] ? '#2ecc71' : '#e74c3c'; ?>">
+                            <div class="card-header" style="font-style: italic;display: flex; justify-content: space-between; align-items: center;">
+                                <h3 style="color: <?php echo $session['is_active'] ? '#015918' : '#700d00'; ?>">
                                     <?php echo htmlspecialchars($session['name'] ?? 'Session #' . $session['session_id']); ?>
                                 </h3>
-                                <span class="status-indicator" style="font-size: 0.85rem; color: <?php echo $session['is_active'] ? '#2ecc71' : '#e74c3c'; ?>">
+                                <span class="status-indicator" style="font-weight: bold; font-size: 0.85rem; color: <?php echo $session['is_active'] ? '#2ecc71' : '#e74c3c'; ?>">
                                     <?php echo $session['is_active'] ? 'Active' : 'Inactive'; ?>
                                 </span>
                             </div>

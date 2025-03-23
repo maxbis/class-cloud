@@ -12,6 +12,10 @@ body {
     background-color: #f5f5f5;
 }
 
+a {
+    text-decoration: none;
+}
+
 /* Container */
 .container {
     max-width: 1200px;
@@ -53,6 +57,13 @@ body {
     box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
 }
 
+button.btn {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+}
+
 /* Buttons */
 .btn {
     display: inline-block;
@@ -89,6 +100,15 @@ body {
 
 .btn-success:hover {
     background-color: #208f4e;
+}
+
+.btn-warning {
+    background-color: #f39c12;
+    color: #fff;
+}
+
+.btn-warning:hover {
+    background-color: #c58011;
 }
 
 /* Cards */

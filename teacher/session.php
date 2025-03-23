@@ -171,8 +171,16 @@ unset($_SESSION['success'], $_SESSION['error']);
             <h1 style="margin: 0;">Session #<?php echo $sessionId; ?></h1>
             <div class="nav" style="margin: 0;">
                 <span style="margin-right: 1rem;">Access Code: <strong><?php echo $session['access_code']; ?></strong></span>
-                <a href="<?php echo getUrl('/teacher/dashboard.php'); ?>" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Back to Dashboard</a>
-                <a href="<?php echo getUrl('/teacher/logout.php'); ?>" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Logout</a>
+                <button onclick="window.location.href='<?php echo getUrl('/teacher/dashboard.php'); ?>'" 
+                        class="btn btn-primary" 
+                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Dashboard
+                </button>
+                <button onclick="window.location.href='<?php echo getUrl('/teacher/logout.php'); ?>'" 
+                        class="btn btn-danger" 
+                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Logout
+                </button>
             </div>
         </div>
     </header>
@@ -193,14 +201,27 @@ unset($_SESSION['success'], $_SESSION['error']);
             <p>Created: <?php echo date('M j, Y g:i A', strtotime($session['created_at'])); ?></p>
             <p>Bullet Point Limit: <?php echo $session['bulletpoint_limit']; ?> per student</p>
             <div class="nav" style="margin-top: 10px;">
-                <a href="<?php echo getUrl('/teacher/toggle-session.php?id=' . $sessionId); ?>" 
-                   class="btn <?php echo $session['is_active'] ? 'btn-danger' : 'btn-primary'; ?>" 
-                   style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                    <?php echo $session['is_active'] ? 'End Session' : 'Start Session'; ?>
-                </a>
-                <a href="<?php echo getUrl('/teacher/display.php?id=' . $sessionId); ?>" class="btn btn-primary" target="_blank" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                    Open Full Screen Display
-                </a>
+                <?php if ($session['is_active']): ?>
+                    <button onclick="window.location.href='<?php echo getUrl('/teacher/toggle-session.php?id=' . $sessionId); ?>'" 
+                            class="btn btn-warning" 
+                            style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                        End Session
+                    </button>
+                <?php else: ?>
+                    <a href="<?php echo getUrl('/teacher/toggle-session.php?id=' . $sessionId); ?>" 
+                       class="btn btn-primary" 
+                       style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                        Start Session
+                    </a>
+                <?php endif; ?>
+                <button onclick="window.open('<?php echo getUrl('/teacher/display.php?id=' . $sessionId); ?>', '_blank')" 
+                        class="btn btn-primary" 
+                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Full Screen
+                </button>
+                <button onclick="showClearConfirmation()" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Clear Session
+                </button>
             </div>
         </div>
 
@@ -240,6 +261,18 @@ unset($_SESSION['success'], $_SESSION['error']);
                 </div>
             </div>
         </div>
+
+        <!-- Clear Session Confirmation Modal -->
+        <div id="clearModal" class="modal">
+            <div class="modal-content">
+                <h3>Clear Session</h3>
+                <p>Are you sure you want to clear all student submissions? This action cannot be undone.</p>
+                <div class="modal-buttons">
+                    <button class="confirm-delete" onclick="confirmClear()">Clear All</button>
+                    <button class="cancel-delete" onclick="hideClearConfirmation()">Cancel</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer class="header" style="margin-top: 2rem; text-align: center;">
@@ -260,6 +293,43 @@ unset($_SESSION['success'], $_SESSION['error']);
         function hideDeleteConfirmation() {
             document.getElementById('deleteModal').style.display = 'none';
             bulletPointToDelete = null;
+        }
+
+        function showClearConfirmation() {
+            document.getElementById('clearModal').style.display = 'flex';
+        }
+
+        function hideClearConfirmation() {
+            document.getElementById('clearModal').style.display = 'none';
+        }
+
+        function confirmClear() {
+            fetch('<?php echo getUrl('/api/clear-session.php'); ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session_id: <?php echo $sessionId; ?>
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove all bullet points from the DOM
+                    const bulletPoints = document.querySelectorAll('.submission-point');
+                    bulletPoints.forEach(point => point.remove());
+                } else {
+                    alert('Failed to clear session: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while clearing the session.');
+            })
+            .finally(() => {
+                hideClearConfirmation();
+            });
         }
 
         function confirmDelete() {
