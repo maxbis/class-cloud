@@ -1,6 +1,6 @@
 <?php
 // Base path configuration
-define('BASE_PATH', '/cursor/class-cloud');
+define('BASE_PATH', '/class-cloud');
 
 // Helper function to get absolute URL
 function getUrl($path = '') {
