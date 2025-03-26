@@ -35,7 +35,7 @@ if (isTeacherLoggedIn()) {
 
     <main class="container">
         <div class="grid">
-            <div class="card fade-in">
+            <div class="card hop fade-in">
                 <h2><i class="fas fa-chalkboard-teacher"></i> For Teachers</h2>
                 <p>Create and manage interactive classroom sessions where students can participate in real-time.</p>
                 <div class="nav">
@@ -44,7 +44,7 @@ if (isTeacherLoggedIn()) {
                 </div>
             </div>
 
-            <div class="card fade-in">
+            <div class="card hop fade-in">
                 <h2><i class="fas fa-user-graduate"></i> For Students</h2>
                 <p>Join your teacher's session and participate in collaborative discussions.</p>
                 <div class="nav">

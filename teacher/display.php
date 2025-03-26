@@ -115,17 +115,19 @@ foreach ($bulletPoints as $point) {
             gap: 1rem;
         }
         .access-code {
-            background: #f8f9fa;
-            padding: 0.5rem 1rem;
+            background:rgb(16, 0, 88);
+            padding: 0.2rem 1rem;
             border-radius: 4px;
             font-family: monospace;
-            font-size: 1.1rem;
-            color: #2c3e50;
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color:rgb(2, 254, 2);
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
         .access-code:hover {
-            background: #e9ecef;
+            background:rgb(0, 0, 0);
         }
         .access-code a {
             text-decoration: none;
@@ -238,8 +240,7 @@ foreach ($bulletPoints as $point) {
     <header class="header">
         <div class="header-content">
             <div class="header-title">
-                <h1>Session #<?php echo $sessionId; ?></h1>
-                <div class="session-name"><?php echo htmlspecialchars($session['name'] ?? 'Unnamed Session'); ?></div>
+                <div class="session-name"><h1><?php echo htmlspecialchars($session['name'] ?? 'Unnamed Session'); ?></h1></div>
             </div>
             <div class="header-info">
                 <div class="access-code">

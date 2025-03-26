@@ -14,7 +14,7 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accessCode = strtoupper(sanitizeInput($_POST['access_code'] ?? ''));
     $name = sanitizeInput($_POST['name'] ?? '');
-    
+
     if (empty($accessCode) || empty($name)) {
         $error = 'Please fill in all fields';
     } elseif (!preg_match('/^[A-Z0-9]{6}$/', $accessCode)) {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Check if session exists and is active
         $session = getSessionByAccessCode($accessCode);
-        
+
         if (!$session) {
             $error = 'Invalid access code';
         } elseif (!$session['is_active']) {
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Register student
             $studentId = registerStudent($session['session_id'], $name);
-            
+
             if ($studentId) {
                 // Log student in
                 if (loginStudent($session['session_id'], $studentId)) {
@@ -50,12 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Session - Interactive Classroom Participation System</title>
     <link rel="stylesheet" href="<?php echo getUrl('/assets/css/style.css'); ?>">
 </head>
+
 <body>
     <header class="header">
         <div class="container">
@@ -72,15 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST" action="">
                 <div class="form-group">
                     <label for="access_code">Access Code</label>
-                    <input type="text" id="access_code" name="access_code" class="form-control" 
-                           pattern="[A-Z0-9]{6}" maxlength="6" required>
+                    <input type="text" id="access_code" name="access_code" class="form-control" pattern="[A-Z0-9]{6}"
+                        maxlength="6" required>
                     <small>Enter the 6-character code provided by your teacher</small>
                 </div>
 
                 <div class="form-group">
                     <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" class="form-control" 
-                           minlength="2" maxlength="50" required>
+                    <input type="text" id="name" name="name" class="form-control" minlength="2" maxlength="50" required>
                 </div>
 
                 <div class="form-group">
@@ -88,9 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </form>
 
-            <div class="nav" style="margin-top: 1rem;">
-                <a href="<?php echo getUrl('/'); ?>">Back to Home</a>
-            </div>
         </div>
     </main>
 
@@ -102,4 +100,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script src="<?php echo getUrl('/assets/js/main.js'); ?>"></script>
 </body>
-</html> 
+
+</html>

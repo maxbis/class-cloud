@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/functions.php';
 requireTeacherAuth();
 
 // Get session ID from URL
-$sessionId = (int)($_GET['id'] ?? 0);
+$sessionId = (int) ($_GET['id'] ?? 0);
 
 // Verify teacher owns this session
 $stmt = $pdo->prepare("
@@ -32,17 +32,19 @@ if (!$session) {
 // Handle bullet point moderation
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_bulletpoint'])) {
-        $bulletpointId = (int)$_POST['bulletpoint_id'];
-        
+        $bulletpointId = (int) $_POST['bulletpoint_id'];
+
         $stmt = $pdo->prepare("
             DELETE FROM bullet_points 
             WHERE bulletpoint_id = :bulletpoint_id AND session_id = :session_id
         ");
-        
-        if ($stmt->execute([
-            ':bulletpoint_id' => $bulletpointId,
-            ':session_id' => $sessionId
-        ])) {
+
+        if (
+            $stmt->execute([
+                ':bulletpoint_id' => $bulletpointId,
+                ':session_id' => $sessionId
+            ])
+        ) {
             $success = 'Bullet point deleted successfully.';
         } else {
             $error = 'Failed to delete bullet point.';
@@ -75,6 +77,7 @@ unset($_SESSION['success'], $_SESSION['error']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,7 +89,7 @@ unset($_SESSION['success'], $_SESSION['error']);
             background: white;
             padding: 1rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 1rem;
             position: relative;
             border-left: 4px solid;
@@ -98,6 +101,7 @@ unset($_SESSION['success'], $_SESSION['error']);
             -moz-user-select: none;
             -ms-user-select: none;
         }
+
         .delete-btn {
             position: absolute;
             top: 0.5rem;
@@ -112,9 +116,11 @@ unset($_SESSION['success'], $_SESSION['error']);
             transition: background-color 0.2s ease;
             z-index: 10;
         }
+
         .delete-btn:hover {
             background: #c0392b;
         }
+
         .modal {
             display: none;
             position: fixed;
@@ -127,6 +133,7 @@ unset($_SESSION['success'], $_SESSION['error']);
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
             background: white;
             padding: 2rem;
@@ -135,12 +142,14 @@ unset($_SESSION['success'], $_SESSION['error']);
             width: 90%;
             text-align: center;
         }
+
         .modal-buttons {
             display: flex;
             justify-content: center;
             gap: 1rem;
             margin-top: 1.5rem;
         }
+
         .modal-buttons button {
             padding: 0.5rem 1.5rem;
             border: none;
@@ -149,36 +158,42 @@ unset($_SESSION['success'], $_SESSION['error']);
             font-size: 0.9rem;
             transition: background-color 0.2s ease;
         }
+
         .modal-buttons .confirm-delete {
             background: #e74c3c;
             color: white;
         }
+
         .modal-buttons .confirm-delete:hover {
             background: #c0392b;
         }
+
         .modal-buttons .cancel-delete {
             background: #95a5a6;
             color: white;
         }
+
         .modal-buttons .cancel-delete:hover {
             background: #7f8c8d;
         }
     </style>
 </head>
+
 <body>
     <header class="header">
         <div class="container" style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <h1 style="margin: 0;">Session #<?php echo $sessionId; ?></h1>
+            <h1 style="margin: 0;">
+                <div style="margin-right: 1rem;">Access Code: <?php echo $session['access_code']; ?></div>
+            </h1>
+
             <div class="nav" style="margin: 0;">
-                <span style="margin-right: 1rem;">Access Code: <strong><?php echo $session['access_code']; ?></strong></span>
-                <button onclick="window.location.href='<?php echo getUrl('/teacher/dashboard.php'); ?>'" 
-                        class="btn btn-primary" 
-                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+
+                <button onclick="window.location.href='<?php echo getUrl('/teacher/dashboard.php'); ?>'"
+                    class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                     Dashboard
                 </button>
-                <button onclick="window.location.href='<?php echo getUrl('/teacher/logout.php'); ?>'" 
-                        class="btn btn-danger" 
-                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <button onclick="window.location.href='<?php echo getUrl('/teacher/logout.php'); ?>'"
+                    class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                     Logout
                 </button>
             </div>
@@ -195,53 +210,58 @@ unset($_SESSION['success'], $_SESSION['error']);
         <?php endif; ?>
 
         <!-- Session Status -->
-        <div class="card fade-in" style="margin-top: 1.5rem;">
-            <h2>Session Status</h2>
+        <div class="card hop fade-in" style="margin-top: 1.5rem;">
+            <h2><?php echo $session["name"]; ?></h2>
             <p>Status: <strong><?php echo $session['is_active'] ? 'Active' : 'Inactive'; ?></strong></p>
             <p>Created: <?php echo date('M j, Y g:i A', strtotime($session['created_at'])); ?></p>
             <p>Bullet Point Limit: <?php echo $session['bulletpoint_limit']; ?> per student</p>
             <div class="nav" style="margin-top: 10px;">
                 <?php if ($session['is_active']): ?>
-                    <button onclick="window.location.href='<?php echo getUrl('/teacher/toggle-session.php?id=' . $sessionId); ?>'" 
-                            class="btn btn-warning" 
-                            style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    <button
+                        onclick="window.location.href='<?php echo getUrl('/teacher/toggle-session.php?id=' . $sessionId); ?>'"
+                        class="btn btn-warning" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                         End Session
                     </button>
                 <?php else: ?>
-                    <a href="<?php echo getUrl('/teacher/toggle-session.php?id=' . $sessionId); ?>" 
-                       class="btn btn-primary" 
-                       style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    <a href="<?php echo getUrl('/teacher/toggle-session.php?id=' . $sessionId); ?>" class="btn btn-primary"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                         Start Session
                     </a>
                 <?php endif; ?>
-                <button onclick="window.open('<?php echo getUrl('/teacher/display.php?id=' . $sessionId); ?>', '_blank')" 
-                        class="btn btn-primary" 
-                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <button
+                    onclick="window.open('<?php echo getUrl('/teacher/display.php?id=' . $sessionId); ?>', '_blank')"
+                    class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                     Full Screen
                 </button>
-                <button onclick="showClearConfirmation()" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <button onclick="showClearConfirmation()" class="btn btn-danger"
+                    style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                     Clear Session
                 </button>
             </div>
         </div>
 
         <!-- Bullet Points -->
-        <div class="card fade-in">
+        <div class="card hop fade-in">
             <div class="card-header">
-                <h2>Student Submissions</h2>
+                <h2 onclick="toggleSubmissions()" style="cursor: pointer;">
+                    <span id="toggleTriangle">&#9654;</span> Student Submissions
+                </h2>
             </div>
-            <div class="card-body">
+            <div id="submissionsContent" class="card-body" style="display: none;">
                 <?php if (empty($bulletPoints)): ?>
                     <p class="text-muted">No submissions yet.</p>
                 <?php else: ?>
                     <?php foreach ($bulletPoints as $point): ?>
-                        <div class="submission-point" style="border-left-color: <?php echo $studentColors[$point['student_id']]; ?>" data-id="<?php echo $point['bulletpoint_id']; ?>">
-                            <button class="delete-btn" onclick="showDeleteConfirmation(<?php echo $point['bulletpoint_id']; ?>)">
+                        <div class="submission-point"
+                            style="border-left-color: <?php echo $studentColors[$point['student_id']]; ?>"
+                            data-id="<?php echo $point['bulletpoint_id']; ?>">
+                            <button class="delete-btn"
+                                onclick="showDeleteConfirmation(<?php echo $point['bulletpoint_id']; ?>)">
                                 Delete
                             </button>
                             <p><?php echo htmlspecialchars($point['content']); ?></p>
                             <small class="text-muted">
-                                Submitted by <?php echo htmlspecialchars($point['student_name']); ?> 
+                                Submitted by <?php echo htmlspecialchars($point['student_name']); ?>
                                 on <?php echo date('M j, Y g:i A', strtotime($point['created_at'])); ?>
                             </small>
                         </div>
@@ -249,7 +269,6 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <?php endif; ?>
             </div>
         </div>
-
         <!-- Delete Confirmation Modal -->
         <div id="deleteModal" class="modal">
             <div class="modal-content">
@@ -313,23 +332,23 @@ unset($_SESSION['success'], $_SESSION['error']);
                     session_id: <?php echo $sessionId; ?>
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove all bullet points from the DOM
-                    const bulletPoints = document.querySelectorAll('.submission-point');
-                    bulletPoints.forEach(point => point.remove());
-                } else {
-                    alert('Failed to clear session: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while clearing the session.');
-            })
-            .finally(() => {
-                hideClearConfirmation();
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove all bullet points from the DOM
+                        const bulletPoints = document.querySelectorAll('.submission-point');
+                        bulletPoints.forEach(point => point.remove());
+                    } else {
+                        alert('Failed to clear session: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while clearing the session.');
+                })
+                .finally(() => {
+                    hideClearConfirmation();
+                });
         }
 
         function confirmDelete() {
@@ -344,26 +363,39 @@ unset($_SESSION['success'], $_SESSION['error']);
                     bulletpoint_id: bulletPointToDelete
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove the bullet point from the DOM
-                    const bulletPoint = document.querySelector(`.submission-point[data-id="${bulletPointToDelete}"]`);
-                    if (bulletPoint) {
-                        bulletPoint.remove();
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the bullet point from the DOM
+                        const bulletPoint = document.querySelector(`.submission-point[data-id="${bulletPointToDelete}"]`);
+                        if (bulletPoint) {
+                            bulletPoint.remove();
+                        }
+                    } else {
+                        alert('Failed to delete submission: ' + data.message);
                     }
-                } else {
-                    alert('Failed to delete submission: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while deleting the submission.');
-            })
-            .finally(() => {
-                hideDeleteConfirmation();
-            });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the submission.');
+                })
+                .finally(() => {
+                    hideDeleteConfirmation();
+                });
+        }
+
+        function toggleSubmissions() {
+            var content = document.getElementById('submissionsContent');
+            var triangle = document.getElementById('toggleTriangle');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                triangle.innerHTML = "&#9660;"; // Downward triangle when open
+            } else {
+                content.style.display = 'none';
+                triangle.innerHTML = "&#9654;"; // Rightward triangle when closed
+            }
         }
     </script>
 </body>
-</html> 
+
+</html>
