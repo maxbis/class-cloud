@@ -237,7 +237,7 @@ foreach ($bulletPoints as $point) {
     </style>
 </head>
 <body>
-    <header class="header">
+    <header class="header" style="background-color:rgb(255, 253, 239);">
         <div class="header-content">
             <div class="header-title">
                 <div class="session-name"><h1><?php echo htmlspecialchars($session['name'] ?? 'Unnamed Session'); ?></h1></div>
@@ -252,8 +252,8 @@ foreach ($bulletPoints as $point) {
         </div>
     </header>
 
-    <main class="container" style="padding-top: 1rem;">
-        <div class="card fade-in">
+    <main class="container" style="padding: 0px;">
+        <div class="card fade-in" style="padding: 0px;">
             <div id="word-cloud" class="word-cloud"></div>
         </div>
     </main>
