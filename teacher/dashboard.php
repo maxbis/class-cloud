@@ -115,19 +115,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
                 <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); gap: 1.5rem;">
                     <?php foreach ($sessions as $session): ?>
                         <div class="card">
-                            <div class="card-header" style="font-style: italic;display: flex; justify-content: space-between; align-items: center;">
+                            <div class="card-header" style="font-style: normal;display: flex; justify-content: space-between; align-items: center;">
                                 <h3 style="color: <?php echo $session['is_active'] ? '#015918' : '#700d00'; ?>">
-                                    <?php echo htmlspecialchars($session['name'] ?? 'Session #' . $session['session_id']); ?>
+                                    <span class="session-name" 
+                                          data-session-id="<?php echo $session['session_id']; ?>"
+                                          contenteditable="true"
+                                          style="cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: background-color 0.2s;">
+                                        <?php echo htmlspecialchars($session['name'] ?? 'Session #' . $session['session_id']); ?>
+                                    </span>
                                 </h3>
                                 <span class="status-indicator" style="font-weight: bold; font-size: 0.85rem; color: <?php echo $session['is_active'] ? '#2ecc71' : '#e74c3c'; ?>">
                                     <?php echo $session['is_active'] ? 'Active' : 'Inactive'; ?>
                                 </span>
                             </div>
-                            <p>Session ID: #<?php echo $session['session_id']; ?></p>
-                            <p>Access Code: <strong><?php echo $session['access_code']; ?></strong></p>
-                            <p>Students: <?php echo $session['student_count']; ?></p>
-                            <p>Total Bullet Points: <?php echo $session['bulletpoint_count']; ?></p>
-                            <p>Created: <?php echo date('M j, Y g:i A', strtotime($session['created_at'])); ?></p>
+                            <p style="margin-bottom: 0;">Session ID: #<?php echo $session['session_id']; ?></p>
+                            <p style="margin-bottom: 0;">Access Code: <strong><?php echo $session['access_code']; ?></strong></p>
+                            <p style="margin-bottom: 0;">Students: <?php echo $session['student_count']; ?></p>
+                            <p style="margin-bottom: 0;">Total Bullet Points: <?php echo $session['bulletpoint_count']; ?></p>
+                            <p style="margin-bottom: 0;">Created: <?php echo date('M j, Y g:i A', strtotime($session['created_at'])); ?></p>
                             <div class="nav" style="margin-top: 10px;">
                                 <button type="button" 
                                         onclick="window.location.href='<?php echo getUrl('/teacher/session.php?id=' . $session['session_id']); ?>'"
@@ -182,6 +187,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
         const deleteModal = document.getElementById('deleteModal');
         const sessionNameSpan = document.getElementById('sessionName');
 
+        // Session name editing functionality
+        document.querySelectorAll('.session-name').forEach(element => {
+            let originalName = element.textContent;
+            let timeoutId = null;
+
+            element.addEventListener('blur', () => {
+                const newName = element.textContent.trim();
+                if (newName !== originalName && newName !== '') {
+                    updateSessionName(element.dataset.sessionId, newName);
+                    originalName = newName;
+                } else if (newName === '') {
+                    element.textContent = originalName;
+                }
+            });
+
+            element.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    element.blur();
+                }
+            });
+
+            element.addEventListener('focus', () => {
+                element.style.backgroundColor = '#f8f9fa';
+            });
+
+            element.addEventListener('blur', () => {
+                element.style.backgroundColor = 'transparent';
+            });
+        });
+
+        function updateSessionName(sessionId, newName) {
+            fetch('<?php echo getUrl('/api/update-session-name.php'); ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    name: newName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Failed to update session name: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the session name.');
+            });
+        }
+
+        // Existing delete session code
         document.querySelectorAll('.delete-session').forEach(button => {
             button.addEventListener('click', () => {
                 sessionToDelete = button.dataset.sessionId;
