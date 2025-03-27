@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/datefunctions.php';
 
 // Require student authentication
 requireStudentAuth();
@@ -94,8 +95,81 @@ $remainingBulletPoints = $bulletPointInfo['bulletpoint_limit'] - $bulletPointInf
     <title>Submit Bullet Points - Interactive Classroom Participation System</title>
     <link rel="stylesheet" href="<?php echo getUrl('/assets/css/style.css'); ?>">
     <meta name="session-id" content="<?php echo $sessionId; ?>">
+    <style>
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            background: rgba(46, 204, 113, 0.95);
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: pointer;
+        }
+
+        .toast:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            background: rgba(46, 204, 113, 1);
+        }
+
+        .toast.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .toast .icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .toast .message {
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .toast .icon {
+            animation: bounce 0.6s ease infinite;
+        }
+
+        .toast-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast-overlay.show {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
+    <div class="toast-overlay"></div>
+    <div id="toast" class="toast">
+        <span class="icon">🎉</span>
+        <span class="message">Thank you!</span>
+    </div>
     <header class="header">
         <div class="container">
             <h1>Submit Bullet Points</h1>
@@ -116,12 +190,11 @@ $remainingBulletPoints = $bulletPointInfo['bulletpoint_limit'] - $bulletPointInf
             <div class="alert alert-error"><?php echo $error; ?></div>
         <?php endif; ?>
 
-        <!-- Submit Form -->
         <div class="card fade-in">
-            <h2>Add New Bullet Point</h2>
+            <h1><?php echo htmlspecialchars($session['name'] ?? 'Session #' . $sessionId); ?></h1>
             <form method="POST" action="">
                 <div class="form-group">
-                    <label for="content">Your Bullet Point</label>
+                    <label for="content">Your Bullet Point or Short Answer</label>
                     <textarea id="content" name="content" class="form-control" 
                               rows="4" minlength="3" maxlength="500" required></textarea>
                     <small>Enter your bullet point (3-500 characters)</small>
@@ -163,5 +236,66 @@ $remainingBulletPoints = $bulletPointInfo['bulletpoint_limit'] - $bulletPointInf
     </footer>
 
     <script src="<?php echo getUrl('/assets/js/main.js'); ?>"></script>
+    <script>
+        let toastTimeout;
+
+        // Show toast notification
+        function showToast() {
+            const toast = document.getElementById('toast');
+            const overlay = document.querySelector('.toast-overlay');
+            
+            // Clear any existing timeout
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+            }
+            
+            // Show overlay first
+            overlay.classList.add('show');
+            
+            // Show toast with a slight delay
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Set timeout to auto-hide after 2 seconds
+            toastTimeout = setTimeout(hideToast, 2000);
+        }
+
+        // Hide toast notification
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            const overlay = document.querySelector('.toast-overlay');
+            
+            toast.classList.remove('show');
+            setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 300);
+        }
+
+        // Show toast on successful submission
+        <?php if (isset($success)): ?>
+            document.addEventListener('DOMContentLoaded', () => {
+                showToast();
+            });
+        <?php endif; ?>
+
+        // Add click event to toast
+        document.getElementById('toast').addEventListener('click', () => {
+            // Clear the auto-hide timeout when clicked
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+            }
+            hideToast();
+        });
+
+        // Handle form submission
+        document.querySelector('form').addEventListener('submit', (e) => {
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            if (!submitButton.disabled) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = 'Submitting...';
+            }
+        });
+    </script>
 </body>
 </html> 

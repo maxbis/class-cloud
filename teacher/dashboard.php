@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
-
+require_once __DIR__ . '/../includes/datefunctions.php';
 // Require teacher authentication
 requireTeacherAuth();
 
@@ -27,12 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
     $bulletpointLimit = (int)($_POST['bulletpoint_limit'] ?? 5);
     $sessionName = trim($_POST['session_name'] ?? '');
     $accessCode = generateAccessCode();
-    
+
     // Debug: Check if teacher exists
     $checkStmt = $pdo->prepare("SELECT teacher_id FROM teachers WHERE teacher_id = :teacher_id");
     $checkStmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
     $teacher = $checkStmt->fetch();
-    
+
     if (!$teacher) {
         $error = 'Teacher account not found. Please log in again.';
         // Clear invalid session
@@ -40,12 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
         header('Location: ' . getUrl('/teacher/login.php'));
         exit;
     }
-    
+
     $stmt = $pdo->prepare("
         INSERT INTO sessions (teacher_id, access_code, bulletpoint_limit, name)
         VALUES (:teacher_id, :access_code, :bulletpoint_limit, :name)
     ");
-    
+
     if ($stmt->execute([
         ':teacher_id' => $_SESSION['teacher_id'],
         ':access_code' => $accessCode,
@@ -60,12 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - Interactive Classroom Participation System</title>
     <link rel="stylesheet" href="<?php echo getUrl('/assets/css/style.css'); ?>">
 </head>
+
 <body>
     <header class="header">
         <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
@@ -92,13 +94,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
             <form method="POST" action="" class="grid" style="grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: end;">
                 <div class="form-group">
                     <label for="session_name">Session Name</label>
-                    <input type="text" id="session_name" name="session_name" class="form-control" 
-                           placeholder="Enter session name" required style="width: 100%;">
+                    <input type="text" id="session_name" name="session_name" class="form-control"
+                        placeholder="Enter session name" required style="width: 100%;">
                 </div>
                 <div class="form-group">
                     <label for="bulletpoint_limit">Max Bullet Points per Student</label>
-                    <input type="number" id="bulletpoint_limit" name="bulletpoint_limit" class="form-control" 
-                           value="5" min="1" max="20" required style="width: 100px;">
+                    <input type="number" id="bulletpoint_limit" name="bulletpoint_limit" class="form-control"
+                        value="5" min="1" max="20" required style="width: 100px;">
                 </div>
                 <div class="form-group">
                     <button type="submit" name="create_session" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Create Session</button>
@@ -114,45 +116,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
             <?php else: ?>
                 <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); gap: 1.5rem;">
                     <?php foreach ($sessions as $session): ?>
-                        <div class="card">
+                        <div class="card" style="width:90%;margin-bottom: 0px;background-color: #fbfbfb;border: 1px solid #d0d0d0;padding:1rem;">
                             <div class="card-header" style="font-style: normal;display: flex; justify-content: space-between; align-items: center;">
-                                <h3 style="color: <?php echo $session['is_active'] ? '#015918' : '#700d00'; ?>">
-                                    <span class="session-name" 
-                                          data-session-id="<?php echo $session['session_id']; ?>"
-                                          contenteditable="true"
-                                          style="cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: background-color 0.2s;">
+                                <h3 style="color: <?php echo $session['is_active'] ? '#015918' : '#9c5757'; ?>">
+                                    <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: <?php echo $session['is_active'] ? '#0c6b01' : '#7a0000'; ?>;"></span>&nbsp;
+                                    <span class="session-name"
+                                        data-session-id="<?php echo $session['session_id']; ?>"
+                                        contenteditable="true"
+                                        style="cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: background-color 0.2s;">
                                         <?php echo htmlspecialchars($session['name'] ?? 'Session #' . $session['session_id']); ?>
                                     </span>
                                 </h3>
-                                <span class="status-indicator" style="font-weight: bold; font-size: 0.85rem; color: <?php echo $session['is_active'] ? '#2ecc71' : '#e74c3c'; ?>">
+                                <span class="status-indicator" style="font-weight: bold; font-size: 0.85rem; color: <?php echo $session['is_active'] ? '#0c6b01' : '#940000'; ?>">
                                     <?php echo $session['is_active'] ? 'Active' : 'Inactive'; ?>
                                 </span>
                             </div>
-                            <p style="margin-bottom: 0;">Session ID: #<?php echo $session['session_id']; ?></p>
-                            <p style="margin-bottom: 0;">Access Code: <strong><?php echo $session['access_code']; ?></strong></p>
-                            <p style="margin-bottom: 0;">Students: <?php echo $session['student_count']; ?></p>
-                            <p style="margin-bottom: 0;">Total Bullet Points: <?php echo $session['bulletpoint_count']; ?></p>
-                            <p style="margin-bottom: 0;">Created: <?php echo date('M j, Y g:i A', strtotime($session['created_at'])); ?></p>
-                            <div class="nav" style="margin-top: 10px;">
-                                <button type="button" 
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <?php if ($session['is_active']): ?>
+                                        <p style="margin-bottom: 0;">Access Code: <strong><?php echo $session['access_code']; ?></strong></p>
+                                        <p style="margin-bottom: 0;">Students: <?php echo $session['student_count']; ?></p>
+                                    <?php endif; ?>
+                                    <p style="margin-bottom: 0;">Total Bullet Points: <?php echo $session['bulletpoint_count']; ?></p>
+                                    <p>Created: <?php echo formatCreationDate($session['created_at']); ?></p>
+                                </div>
+                                <div class="nav" style="margin-top: 10px;">
+                                    <button type="button"
                                         onclick="window.location.href='<?php echo getUrl('/teacher/session.php?id=' . $session['session_id']); ?>'"
-                                        class="btn btn-primary" 
+                                        class="btn btn-primary"
                                         style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">View</button>
-                                <button type="button" 
+                                    <button type="button"
                                         onclick="window.location.href='<?php echo getUrl('/teacher/toggle-session.php?id=' . $session['session_id']); ?>'"
                                         class="btn <?php echo $session['is_active'] ? 'btn-danger' : 'btn-success'; ?>"
-                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background-color: <?php echo $session['is_active'] ? '#e74c3c' : '#2ecc71'; ?>; color: #fff;">
-                                    <?php echo $session['is_active'] ? 'End' : 'Start'; ?>
-                                </button>
-                                <?php if (!$session['is_active']): ?>
-                                    <button type="button" 
-                                            class="btn btn-danger delete-session" 
-                                            data-session-id="<?php echo $session['session_id']; ?>"
-                                            data-session-name="<?php echo htmlspecialchars($session['name'] ?? 'Session #' . $session['session_id']); ?>"
-                                            style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                                        Delete
+                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background-color: <?php echo $session['is_active'] ? '#9c5757' : '#0c6b01'; ?>; color: #fff;">
+                                        <?php echo $session['is_active'] ? '&nbsp;End&nbsp;' : 'Start'; ?>
                                     </button>
-                                <?php endif; ?>
+                                    
+                                        <button type="button" 
+                                                class="btn btn-icon delete-session" 
+                                                data-session-id="<?php echo $session['session_id']; ?>"
+                                                data-session-name="<?php echo htmlspecialchars($session['name'] ?? 'Session #' . $session['session_id']); ?>"
+                                                style="padding: 0.4rem; font-size: 1.2rem; background: none; border: none; color: #e74c3c; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                            🗑️
+                                        </button>
+
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -167,10 +175,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
             <h2 style="margin-top: 0; color: #2c3e50;">Delete</h2>
             <p>Are you sure you want to delete <span id="sessionName"></span>? This action cannot be undone.</p>
             <div class="nav" style="justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()" 
-                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()"
+                    style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
                 <button type="button" class="btn btn-danger" onclick="confirmDelete()"
-                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Delete</button>
+                    style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Delete</button>
             </div>
         </div>
     </div>
@@ -281,5 +289,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_session'])) {
             });
         }
     </script>
+    <style>
+        .btn-icon {
+            transition: transform 0.2s ease;
+        }
+        .btn-icon:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </body>
-</html> 
+
+</html>

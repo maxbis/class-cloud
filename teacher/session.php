@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/datefunctions.php';
 
 // Require teacher authentication
 requireTeacherAuth();
@@ -74,7 +75,9 @@ $keywords = getTopKeywords($sessionId);
 $success = $_SESSION['success'] ?? null;
 $error = $_SESSION['error'] ?? null;
 unset($_SESSION['success'], $_SESSION['error']);
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -211,9 +214,9 @@ unset($_SESSION['success'], $_SESSION['error']);
 
         <!-- Session Status -->
         <div class="card hop fade-in" style="margin-top: 1.5rem;">
-            <h2><?php echo $session["name"]; ?></h2>
-            <p>Status: <strong><?php echo $session['is_active'] ? 'Active' : 'Inactive'; ?></strong></p>
-            <p>Created: <?php echo date('M j, Y g:i A', strtotime($session['created_at'])); ?></p>
+            <h2><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: <?php echo $session['is_active'] ? 'green' : 'red'; ?>;"></span>&nbsp;<?php echo $session["name"]; ?></h2>
+            <!-- <p>Code: <strong><?php echo $session['access_code']; ?></strong></p> -->
+            <p>Created: <?php echo formatCreationDate($session['created_at']); ?></p>
             <p>Bullet Point Limit: <?php echo $session['bulletpoint_limit']; ?> per student</p>
             <div class="nav" style="margin-top: 10px;">
                 <?php if ($session['is_active']): ?>
@@ -324,14 +327,14 @@ unset($_SESSION['success'], $_SESSION['error']);
 
         function confirmClear() {
             fetch('<?php echo getUrl('/api/clear-session.php'); ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    session_id: <?php echo $sessionId; ?>
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: <?php echo $sessionId; ?>
+                    })
                 })
-            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -355,14 +358,14 @@ unset($_SESSION['success'], $_SESSION['error']);
             if (!bulletPointToDelete) return;
 
             fetch('<?php echo getUrl('/api/delete-bulletpoint.php'); ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    bulletpoint_id: bulletPointToDelete
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bulletpoint_id: bulletPointToDelete
+                    })
                 })
-            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
